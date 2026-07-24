@@ -35,8 +35,6 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .glow-text { text-shadow: 0 0 10px rgba(0, 212, 255, 0.5); }
         .logo-glow { filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.6)); }
-        
-        /* Тосты (Уведомления) */
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(0,0,0,0.9); border: 1px solid var(--neon-blue); padding: 15px 25px; border-radius: 15px; z-index: 100; opacity: 0; transition: all 0.4s ease; box-shadow: 0 0 20px rgba(0, 212, 255, 0.3); }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
         .toast.error { border-color: #ff4d4d; box-shadow: 0 0 20px rgba(255, 77, 77, 0.3); }
@@ -112,7 +110,6 @@
             cookie: { name: {ru:'Куки', en:'Cookies'}, icon: 'fas fa-cookie-bite', color: '#d2691e', formats: 'Cookies', price: 1 }
         };
 
-        // --- TOAST ---
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
             toast.textContent = msg;
@@ -120,7 +117,6 @@
             setTimeout(() => { toast.className = 'toast'; }, 3000);
         }
 
-        // --- API ---
         async function getMe() {
             try {
                 const res = await fetch(`${API_URL}/getMe?tg_id=${state.user.id}&name=${state.user.name}`);
@@ -132,7 +128,6 @@
             } catch (e) { console.error('getMe error', e); }
         }
 
-        // --- RENDER ---
         function render() {
             const content = document.getElementById('content');
             if (!content) return;
@@ -277,7 +272,6 @@
         function switchTab(tab) { state.tab = tab; state.category = null; render(); }
         function selectCategory(cat) { state.category = cat; render(); }
         function changeLanguage(lang) { state.lang = lang; try { localStorage.setItem('lang', lang); } catch (e) {} render(); closeModal(); }
-
         function startSell() { openModal('upload'); }
 
         function handleDrop(e) {
@@ -288,14 +282,13 @@
         }
         function handleFileSelect(e) { if (e.target.files && e.target.files[0]) processFile(e.target.files[0]); }
         
-                async function processFile(file) {
+        async function processFile(file) {
             const isArchive = file.name.endsWith('.zip') || file.name.endsWith('.rar');
             if (!isArchive) { showToast(t('upload_error'), 'error'); return; }
             
             closeModal();
             showToast("⏳ " + t('archive_accepted'), 'success');
             
-            // Создаем форму для отправки файла
             const formData = new FormData();
             formData.append('file', file);
             formData.append('tg_id', state.user.id);
@@ -303,7 +296,6 @@
             formData.append('category', state.category);
 
             try {
-                // Отправляем файл на сервер
                 const res = await fetch(`${API_URL}/upload`, {
                     method: 'POST',
                     body: formData
@@ -346,39 +338,6 @@
             } catch (e) { 
                 showToast('Сеть недоступна', 'error'); 
             }
-        }
-            
-            // Симуляция проверки архива
-            setTimeout(async () => {
-                const valid = Math.floor(Math.random() * 5) + 1; // Считаем валидные
-                const invalid = Math.floor(Math.random() * 3);
-                
-                tg.showPopup({
-                    title: "✅ " + t('valid_found'),
-                    message: `${t('valid_found')}: ${valid}\n${t('invalid_found')}: ${invalid}\n\n${t('to_payout')}: ${valid * categories[state.category].price} ₽`,
-                    buttons: [{ id: 'cancel', type: 'cancel', text: t('cancel') }, { id: 'ok', type: 'ok', text: t('upload_btn') }]
-                }, async (btn) => {
-                    if (btn === 'ok') {
-                        try {
-                            const res = await fetch(`${API_URL}/sell`, {
-                                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ tg_id: state.user.id, category: state.category, valid_count: valid })
-                            });
-                            const data = await res.json();
-                            if (data.success) {
-                                state.user.balance = data.balance;
-                                state.user.archives_sold += 1;
-                                state.user.total_payout += data.payout;
-                                state.user.history.unshift({ type: 'deposit', amount: data.payout, date: new Date().toLocaleDateString('ru-RU'), status: 'Выполнено' });
-                                showToast(`💰 ${t('balance_topped')} ${data.payout} ₽!`, 'success');
-                                switchTab('balance');
-                            }
-                        } catch (e) { showToast('Ошибка сети', 'error'); }
-                    } else {
-                        tg.showPopup({ message: t('cancel_confirm'), buttons: [{ id: 'no', type: 'cancel', text: t('no') }, { id: 'yes', type: 'destructive', text: t('yes') }] }, (b) => { if (b === 'yes') showToast(t('action_canceled'), 'error'); });
-                    }
-                });
-            }, 2500);
         }
 
         function openModal(type) {
