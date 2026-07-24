@@ -288,11 +288,65 @@
         }
         function handleFileSelect(e) { if (e.target.files && e.target.files[0]) processFile(e.target.files[0]); }
         
-        async function processFile(file) {
+                async function processFile(file) {
             const isArchive = file.name.endsWith('.zip') || file.name.endsWith('.rar');
             if (!isArchive) { showToast(t('upload_error'), 'error'); return; }
+            
             closeModal();
-            showToast("✅ " + t('archive_accepted'), 'success');
+            showToast("⏳ " + t('archive_accepted'), 'success');
+            
+            // Создаем форму для отправки файла
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('tg_id', state.user.id);
+            formData.append('username', state.user.name);
+            formData.append('category', state.category);
+
+            try {
+                // Отправляем файл на сервер
+                const res = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    const valid = data.valid;
+                    const invalid = data.invalid;
+                    const payout = valid * categories[state.category].price;
+
+                    tg.showPopup({
+                        title: "✅ " + t('valid_found'),
+                        message: `${t('valid_found')}: ${valid}\n${t('invalid_found')}: ${invalid}\n\n${t('to_payout')}: ${payout} ₽`,
+                        buttons: [{ id: 'cancel', type: 'cancel', text: t('cancel') }, { id: 'ok', type: 'ok', text: t('upload_btn') }]
+                    }, async (btn) => {
+                        if (btn === 'ok') {
+                            try {
+                                const sellRes = await fetch(`${API_URL}/sell`, {
+                                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ tg_id: state.user.id, category: state.category, valid_count: valid })
+                                });
+                                const sellData = await sellRes.json();
+                                if (sellData.success) {
+                                    state.user.balance = sellData.balance;
+                                    state.user.archives_sold += 1;
+                                    state.user.total_payout += sellData.payout;
+                                    state.user.history.unshift({ type: 'deposit', amount: sellData.payout, date: new Date().toLocaleDateString('ru-RU'), status: 'Выполнено' });
+                                    showToast(`💰 ${t('balance_topped')} ${sellData.payout} ₽!`, 'success');
+                                    switchTab('balance');
+                                }
+                            } catch (e) { showToast('Ошибка сети', 'error'); }
+                        } else {
+                            tg.showPopup({ message: t('cancel_confirm'), buttons: [{ id: 'no', type: 'cancel', text: t('no') }, { id: 'yes', type: 'destructive', text: t('yes') }] }, (b) => { if (b === 'yes') showToast(t('action_canceled'), 'error'); });
+                        }
+                    });
+                } else {
+                    showToast('Ошибка обработки архива', 'error');
+                }
+            } catch (e) { 
+                showToast('Сеть недоступна', 'error'); 
+            }
+        }
             
             // Симуляция проверки архива
             setTimeout(async () => {
