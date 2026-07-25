@@ -9,19 +9,10 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-dark: #050814; --glass-bg: rgba(15, 23, 42, 0.6);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --neon-blue: #00d4ff; --neon-purple: #7000ff;
-        }
+        :root { --bg-dark: #050814; --glass-bg: rgba(15, 23, 42, 0.6); --glass-border: rgba(255, 255, 255, 0.08); --neon-blue: #00d4ff; --neon-purple: #7000ff; }
         body { font-family: 'Manrope', sans-serif; background-color: var(--bg-dark); color: #fff; min-height: 100vh; overflow-x: hidden; }
-        .premium-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
-            background: radial-gradient(circle at 10% 10%, rgba(0, 212, 255, 0.15) 0%, transparent 40%),
-                        radial-gradient(circle at 90% 80%, rgba(112, 0, 255, 0.15) 0%, transparent 40%), var(--bg-dark);
-        }
-        .noise-texture { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.03; pointer-events: none;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-        }
+        .premium-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: radial-gradient(circle at 10% 10%, rgba(0, 212, 255, 0.15) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(112, 0, 255, 0.15) 0%, transparent 40%), var(--bg-dark); }
+        .noise-texture { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.03; pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E"); }
         .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border: 1px solid var(--glass-border); box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255,255,255,0.05); }
         .btn-premium { background: linear-gradient(135deg, #00d4ff 0%, #0066ff 100%); transition: all 0.3s ease; box-shadow: 0 4px 20px 0 rgba(0, 212, 255, 0.3); font-weight: 700; }
         .btn-premium:active { transform: scale(0.97); box-shadow: 0 2px 10px 0 rgba(0, 212, 255, 0.2); }
@@ -35,9 +26,12 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .glow-text { text-shadow: 0 0 10px rgba(0, 212, 255, 0.5); }
         .logo-glow { filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.6)); }
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(0,0,0,0.9); border: 1px solid var(--neon-blue); padding: 15px 25px; border-radius: 15px; z-index: 100; opacity: 0; transition: all 0.4s ease; box-shadow: 0 0 20px rgba(0, 212, 255, 0.3); }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(15, 23, 42, 0.95); border: 1px solid var(--glass-border); padding: 15px 25px; border-radius: 20px; z-index: 100; opacity: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 15px; max-width: 90%; }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        .toast.error { border-color: #ff4d4d; box-shadow: 0 0 20px rgba(255, 77, 77, 0.3); }
+        .toast-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .toast.success .toast-icon { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .toast.error .toast-icon { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .toast.info .toast-icon { background: rgba(0, 212, 255, 0.2); color: #00d4ff; }
     </style>
 </head>
 <body>
@@ -47,16 +41,19 @@
     <div class="relative z-10 flex flex-col min-h-screen max-w-md mx-auto pb-24 px-4 pt-6">
         <header class="flex justify-between items-center mb-8">
             <div class="flex items-center gap-3">
-                <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="logo-glow">
-                    <defs><linearGradient id="logoGrad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-                        <stop stop-color="#00d4ff"/><stop offset="1" stop-color="#7000ff"/>
-                    </linearGradient></defs>
-                    <rect x="5" y="5" width="90" height="90" rx="24" fill="#0B1120" stroke="url(#logoGrad)" stroke-width="2"/>
-                    <path d="M60 35C60 32 56 30 50 30C44 30 40 32 40 35C40 38 44 40 50 40C56 40 60 42 60 45C60 48 56 50 50 50C44 50 40 52 40 55C40 58 44 60 50 60C56 60 60 62 60 65" stroke="url(#logoGrad)" stroke-width="4" stroke-linecap="round"/>
-                    <path d="M40 35V28M40 28L35 33M40 28L45 33" stroke="url(#logoGrad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M60 65V72M60 72L55 67M60 72L65 67" stroke="url(#logoGrad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <h1 class="text-2xl font-extrabold tracking-tight glow-text">Skupka<span class="text-cyan-400">.com</span></h1>
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-3">
+                        <svg width="36" height="36" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="logo-glow">
+                            <defs><linearGradient id="logoGrad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse"><stop stop-color="#00d4ff"/><stop offset="1" stop-color="#7000ff"/></linearGradient></defs>
+                            <rect x="5" y="5" width="90" height="90" rx="24" fill="#0B1120" stroke="url(#logoGrad)" stroke-width="2"/>
+                            <path d="M60 35C60 32 56 30 50 30C44 30 40 32 40 35C40 38 44 40 50 40C56 40 60 42 60 45C60 48 56 50 50 50C44 50 40 52 40 55C40 58 44 60 50 60C56 60 60 62 60 65" stroke="url(#logoGrad)" stroke-width="4" stroke-linecap="round"/>
+                            <path d="M40 35V28M40 28L35 33M40 28L45 33" stroke="url(#logoGrad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M60 65V72M60 72L55 67M60 72L65 67" stroke="url(#logoGrad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <h1 class="text-2xl font-extrabold tracking-tight glow-text">Skupka<span class="text-cyan-400">.com</span></h1>
+                    </div>
+                    <p class="text-[10px] text-gray-400 mt-1 tracking-widest uppercase">Secure Digital Marketplace</p>
+                </div>
             </div>
             <div class="flex space-x-2 glass-card rounded-full p-1.5">
                 <button onclick="switchTab('home')" id="nav-home" class="nav-btn p-3 rounded-full text-sm"><i class="fas fa-house"></i></button>
@@ -82,212 +79,110 @@
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.setHeaderColor('#050814');
-        tg.setBackgroundColor('#050814');
+        tg.expand(); tg.setHeaderColor('#050814'); tg.setBackgroundColor('#050814');
 
         const API_URL = 'https://skupka-server.onrender.com/api'; // ВАШ URL ОТ RENDER
+        const i18n = { 'ru': { home: "Главная", profile: "Профиль", balance: "Баланс", sell: "Продать", buy: "Купить", back: "Назад", upload_archive: "Загрузка архива", drag_drop: "Перетащите файл (.zip, .rar) сюда", cancel: "Отмена", history: "История операций", withdraw: "Вывод средств", total_payout: "Всего выплачено", archives_sold: "Сдано архивов", reg_date: "Регистрация", help: "Помощь", language: "Язык", privacy: "Конфид.", offer: "Оферта", price_info: "Цена за 1 валидный аккаунт", rub: "руб", select_lang: "Выберите язык", developer: "Разработчик", support: "Поддержка", withdraw_crypto: "Вывести", cryptobot_info: "CryptoBot — это кошелек в Telegram. Вывод происходит мгновенно без комиссий.", privacy_text: "Мы гарантируем полную анонимность. Файлы удаляются с серверов после проверки в течение 24 часов. Данные не передаются третьим лицам.", offer_text: "1. Использование сервиса означает согласие с правилами. 2. Пользователь обязуется предоставлять легитимные данные. 3. Администрация вправе отказать при подозрении на фрод.", valid_found: "Проверка завершена", invalid_found: "Невалидных", to_payout: "К выплате", cancel_confirm: "Вы уверены, что хотите прекратить действие?", action_canceled: "Действие отменено.", archive_accepted: "Архив принят в работу. Идет проверка...", balance_topped: "Ваш баланс пополнен на", upload_btn: "Загрузить и получить деньги", buy_soon: "Отдел покупки находится на стадии разработки!", available: "Доступно к выводу", operations_history: "История операций", upload_error: "Пожалуйста, загрузите архив RAR или ZIP.", select_cat: "Выберите категорию для сделки", close: "Закрыть", yes: "Да", no: "Нет", deposit: "Пополнить", deposit_amount: "Введите сумму пополнения", withdraw_amount: "Введите сумму вывода", prices_title: "Наши расценки", support_time: "Среднее время ответа: до 2 часов", select_crypto: "Выберите криптовалюту", enter_address: "Введите адрес кошелька", sales_history: "История сдач", deposit_title: "Пополнение", withdraw_title: "Вывод", sale_title: "Продажа" }, 'en': { home: "Home", profile: "Profile", balance: "Balance", sell: "Sell", buy: "Buy", back: "Back", upload_archive: "Upload Archive", drag_drop: "Drag file (.zip, .rar) here", cancel: "Cancel", history: "Transaction History", withdraw: "Withdraw", total_payout: "Total Payout", archives_sold: "Archives Sold", reg_date: "Registration", help: "Help", language: "Language", privacy: "Privacy", offer: "Offer", price_info: "Price per 1 valid account", rub: "RUB", select_lang: "Select Language", developer: "Developer", support: "Support", withdraw_crypto: "Withdraw", cryptobot_info: "CryptoBot is a Telegram wallet. Instant withdrawal with no fees.", privacy_text: "We guarantee full anonymity. Files are deleted from servers after verification within 24 hours. Data is not shared with third parties.", offer_text: "1. Using the service means agreement with the rules. 2. The user undertakes to provide legitimate data. 3. Administration may refuse if fraud is suspected.", valid_found: "Check completed", invalid_found: "Invalid", to_payout: "To payout", cancel_confirm: "Are you sure you want to cancel?", action_canceled: "Action canceled.", archive_accepted: "Archive accepted for processing. Checking...", balance_topped: "Your balance has been topped up by", upload_btn: "Upload and get paid", buy_soon: "Purchase department is under development!", available: "Available for withdrawal", operations_history: "Operations History", upload_error: "Please upload a RAR or ZIP archive.", select_cat: "Select a category to deal", close: "Close", yes: "Yes", no: "No", deposit: "Deposit", deposit_amount: "Enter deposit amount", withdraw_amount: "Enter withdrawal amount", prices_title: "Our Prices", support_time: "Average response time: up to 2 hours", select_crypto: "Select cryptocurrency", enter_address: "Enter wallet address", sales_history: "Sales History", deposit_title: "Deposit", withdraw_title: "Withdrawal", sale_title: "Sale" } };
 
-        const i18n = {
-            'ru': { home: "Главная", profile: "Профиль", balance: "Баланс", sell: "Продать", buy: "Купить", back: "Назад", upload_archive: "Загрузка архива", drag_drop: "Перетащите файл (.zip, .rar) сюда", cancel: "Отмена", history: "История операций", withdraw: "Вывод средств", total_payout: "Всего выплачено", archives_sold: "Сдано архивов", reg_date: "Регистрация", help: "Помощь", language: "Язык", privacy: "Конфид.", offer: "Оферта", price_info: "Цена за 1 валидный аккаунт", rub: "руб", select_lang: "Выберите язык", developer: "Разработчик", support: "Поддержка", withdraw_crypto: "Вывести", cryptobot_info: "CryptoBot — это кошелек в Telegram. Вывод происходит мгновенно без комиссий.", privacy_text: "Мы гарантируем полную анонимность. Файлы удаляются с серверов после проверки в течение 24 часов. Данные не передаются третьим лицам.", offer_text: "1. Использование сервиса означает согласие с правилами. 2. Пользователь обязуется предоставлять легитимные данные. 3. Администрация вправе отказать при подозрении на фрод.", valid_found: "Проверка завершена", invalid_found: "Невалидных", to_payout: "К выплате", cancel_confirm: "Вы уверены, что хотите прекратить действие?", action_canceled: "Действие отменено.", archive_accepted: "Архив принят в работу. Идет проверка...", balance_topped: "Ваш баланс пополнен на", upload_btn: "Загрузить и получить деньги", buy_soon: "Отдел покупки находится на стадии разработки!", available: "Доступно к выводу", operations_history: "История операций", upload_error: "Пожалуйста, загрузите архив RAR или ZIP.", select_cat: "Выберите категорию для сделки", close: "Закрыть", yes: "Да", no: "Нет", deposit: "Пополнить", deposit_amount: "Введите сумму пополнения", withdraw_amount: "Введите сумму вывода", prices_title: "Наши расценки", support_time: "Среднее время ответа: до 2 часов", select_crypto: "Выберите криптовалюту", enter_address: "Введите адрес кошелька" },
-            'en': { home: "Home", profile: "Profile", balance: "Balance", sell: "Sell", buy: "Buy", back: "Back", upload_archive: "Upload Archive", drag_drop: "Drag file (.zip, .rar) here", cancel: "Cancel", history: "Transaction History", withdraw: "Withdraw", total_payout: "Total Payout", archives_sold: "Archives Sold", reg_date: "Registration", help: "Help", language: "Language", privacy: "Privacy", offer: "Offer", price_info: "Price per 1 valid account", rub: "RUB", select_lang: "Select Language", developer: "Developer", support: "Support", withdraw_crypto: "Withdraw", cryptobot_info: "CryptoBot is a Telegram wallet. Instant withdrawal with no fees.", privacy_text: "We guarantee full anonymity. Files are deleted from servers after verification within 24 hours. Data is not shared with third parties.", offer_text: "1. Using the service means agreement with the rules. 2. The user undertakes to provide legitimate data. 3. Administration may refuse if fraud is suspected.", valid_found: "Check completed", invalid_found: "Invalid", to_payout: "To payout", cancel_confirm: "Are you sure you want to cancel?", action_canceled: "Action canceled.", archive_accepted: "Archive accepted for processing. Checking...", balance_topped: "Your balance has been topped up by", upload_btn: "Upload and get paid", buy_soon: "Purchase department is under development!", available: "Available for withdrawal", operations_history: "Operations History", upload_error: "Please upload a RAR or ZIP archive.", select_cat: "Select a category to deal", close: "Close", yes: "Yes", no: "No", deposit: "Deposit", deposit_amount: "Enter deposit amount", withdraw_amount: "Enter withdrawal amount", prices_title: "Our Prices", support_time: "Average response time: up to 2 hours", select_crypto: "Select cryptocurrency", enter_address: "Enter wallet address" }
+        let state = { 
+            tab: 'home', 
+            category: null, 
+            user: { id: tg.initDataUnsafe?.user?.id || 12345678, name: tg.initDataUnsafe?.user?.first_name || 'User', balance: 0, archives_sold: 0, total_payout: 0, reg_date: '...', history: [], sales_history: [] }, 
+            lang: 'ru', 
+            displayCurrency: 'RUB', 
+            rates: { USDT: 90, TON: 180 } // Резервные курсы
         };
-
-        let state = {
-            tab: 'home',
-            category: null,
-            user: { id: tg.initDataUnsafe?.user?.id || 12345678, name: tg.initDataUnsafe?.user?.first_name || 'User', balance: 0, archives_sold: 0, total_payout: 0, reg_date: '...', history: [] },
-            lang: 'ru'
-        };
-
+        
         try { const savedLang = localStorage.getItem('lang'); if (savedLang && i18n[savedLang]) state.lang = savedLang; } catch (e) {}
         const t = (key) => i18n[state.lang][key] || key;
 
         const categories = {
-            telegram: { name: {ru:'Telegram', en:'Telegram'}, icon: 'fab fa-telegram', color: '#0088cc', formats: 'TDATA / Session', price: 50 },
-            vk: { name: {ru:'ВКонтакте', en:'VK'}, icon: 'fab fa-vk', color: '#0077FF', formats: 'Cookies', price: 30 },
-            discord: { name: {ru:'Дискорд', en:'Discord'}, icon: 'fab fa-discord', color: '#5865F2', formats: 'Tokens', price: 10 },
-            cookie: { name: {ru:'Куки', en:'Cookies'}, icon: 'fas fa-cookie-bite', color: '#d2691e', formats: 'Cookies', price: 1 }
+            telegram: { name: {ru:'Telegram', en:'Telegram'}, icon: 'fab fa-telegram', color: '#0088cc', formats: 'TDATA / Session', price: 100 },
+            vk: { name: {ru:'ВКонтакте', en:'VK'}, icon: 'fab fa-vk', color: '#0077FF', formats: 'Cookies', price: 60 },
+            discord: { name: {ru:'Дискорд', en:'Discord'}, icon: 'fab fa-discord', color: '#5865F2', formats: 'Tokens', price: 20 },
+            cookie: { name: {ru:'Куки', en:'Cookies'}, icon: 'fas fa-cookie-bite', color: '#d2691e', formats: 'Cookies', price: 2 }
         };
 
-        function showToast(msg, type = 'success') {
+        function showToast(msg, type = 'success', title = '') {
             const toast = document.getElementById('toast');
-            toast.textContent = msg;
-            toast.className = `toast show ${type === 'error' ? 'error' : ''}`;
-            setTimeout(() => { toast.className = 'toast'; }, 3000);
+            const iconMap = { success: 'fa-check', error: 'fa-xmark', info: 'fa-info' };
+            toast.className = `toast show ${type}`;
+            toast.innerHTML = `<div class="toast-icon"><i class="fas ${iconMap[type]}"></i></div><div><p class="font-bold text-sm">${title || (type === 'success' ? 'Успешно' : 'Ошибка')}</p><p class="text-xs text-gray-400">${msg}</p></div>`;
+            clearTimeout(toast.timer);
+            toast.timer = setTimeout(() => { toast.className = 'toast'; }, 3500);
         }
 
         async function getMe() {
             try {
                 const res = await fetch(`${API_URL}/getMe?tg_id=${state.user.id}&name=${state.user.name}`);
                 const data = await res.json();
-                if (data.success) {
-                    state.user = { ...state.user, ...data.user };
-                    render();
+                if (data.success) { 
+                    state.user = { ...state.user, ...data.user }; 
+                    if (data.rates) state.rates = data.rates; 
+                    render(); 
                 }
             } catch (e) { console.error('getMe error', e); }
         }
 
+        function formatBalance(rubAmount) {
+            let amount = parseFloat(rubAmount) || 0;
+            const rates = state.rates || { USDT: 90, TON: 180 };
+            if (state.displayCurrency === 'RUB') return `${amount.toFixed(2)} ₽`;
+            if (state.displayCurrency === 'USDT') return `${(amount / rates.USDT).toFixed(2)} USDT`;
+            if (state.displayCurrency === 'TON') return `${(amount / rates.TON).toFixed(2)} TON`;
+            return `${amount.toFixed(2)} ₽`;
+        }
+
         function render() {
             const content = document.getElementById('content');
-            if (!content) return;
-            content.innerHTML = '';
+            if (!content) return; content.innerHTML = '';
             if (state.tab === 'home') renderHome(content);
             if (state.tab === 'profile') renderProfile(content);
             if (state.tab === 'balance') renderBalance(content);
-            
-            ['home', 'profile', 'balance'].forEach(t => {
-                const el = document.getElementById(`nav-${t}`);
-                if (el) el.classList.toggle('active', state.tab === t);
-            });
+            ['home', 'profile', 'balance'].forEach(t => { const el = document.getElementById(`nav-${t}`); if (el) el.classList.toggle('active', state.tab === t); });
             document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
         }
 
         function renderHome(c) {
             if (!state.category) {
-                let html = `<div class="fade-in">
-                    <h2 class="text-3xl font-extrabold mb-1">${t('home')}</h2>
-                    <p class="text-gray-400 mb-6">${t('select_cat')}</p>
-                    <div class="grid grid-cols-2 gap-4">`;
+                let html = `<div class="fade-in"><h2 class="text-3xl font-extrabold mb-1">${t('home')}</h2><p class="text-gray-400 mb-6">${t('select_cat')}</p><div class="grid grid-cols-2 gap-4">`;
                 Object.keys(categories).forEach(key => {
-                    html += `<div onclick="selectCategory('${key}')" class="glass-card p-5 rounded-3xl cursor-pointer hover:bg-white/5 transition-all hover:scale-[1.02]">
-                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-3" style="background: ${categories[key].color}20; box-shadow: 0 0 20px ${categories[key].color}30">
-                            <i class="${categories[key].icon} text-3xl" style="color: ${categories[key].color}"></i>
-                        </div>
-                        <h3 class="font-bold text-lg">${categories[key].name[state.lang]}</h3>
-                        <p class="text-xs text-gray-400 mt-1">${categories[key].formats}</p>
-                    </div>`;
+                    html += `<div onclick="selectCategory('${key}')" class="glass-card p-5 rounded-3xl cursor-pointer hover:bg-white/5 transition-all hover:scale-[1.02]"><div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-3" style="background: ${categories[key].color}20; box-shadow: 0 0 20px ${categories[key].color}30"><i class="${categories[key].icon} text-3xl" style="color: ${categories[key].color}"></i></div><h3 class="font-bold text-lg">${categories[key].name[state.lang]}</h3><p class="text-xs text-gray-400 mt-1">${categories[key].formats}</p></div>`;
                 });
-                html += `</div>
-                    <div class="mt-8">
-                        <h3 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-tags text-cyan-400"></i> ${t('prices_title')}</h3>
-                        <div class="glass-card p-6 rounded-3xl space-y-4">`;
+                html += `</div><div class="mt-8"><h3 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-tags text-cyan-400"></i> ${t('prices_title')}</h3><div class="glass-card p-6 rounded-3xl space-y-4">`;
                 Object.keys(categories).forEach(key => {
-                    html += `<div class="flex justify-between items-center border-b border-white/5 pb-3 last:border-0">
-                        <div class="flex items-center gap-3">
-                            <i class="${categories[key].icon} text-2xl" style="color: ${categories[key].color}"></i>
-                            <span class="font-medium">${categories[key].name[state.lang]}</span>
-                        </div>
-                        <span class="font-bold text-cyan-400 text-lg">${categories[key].price} ${t('rub')}</span>
-                    </div>`;
+                    html += `<div class="flex justify-between items-center border-b border-white/5 pb-3 last:border-0"><div class="flex items-center gap-3"><i class="${categories[key].icon} text-2xl" style="color: ${categories[key].color}"></i><span class="font-medium">${categories[key].name[state.lang]}</span></div><span class="font-bold text-cyan-400 text-lg">${categories[key].price} ${t('rub')}</span></div>`;
                 });
-                html += `</div></div></div>`;
-                c.innerHTML = html;
+                html += `</div></div></div>`; c.innerHTML = html;
             } else {
                 const cat = categories[state.category];
-                c.innerHTML = `<div class="fade-in">
-                    <button onclick="selectCategory(null)" class="mb-6 text-cyan-400 flex items-center gap-2"><i class="fas fa-arrow-left"></i> ${t('back')}</button>
-                    <div class="glass-card p-8 rounded-3xl text-center relative overflow-hidden">
-                        <div class="absolute -top-10 -right-10 w-32 h-32 rounded-full" style="background: ${cat.color}30; filter: blur(40px);"></div>
-                        <div class="relative z-10">
-                            <div class="w-20 h-20 mx-auto rounded-3xl flex items-center justify-center mb-4" style="background: ${cat.color}20;">
-                                <i class="${cat.icon} text-5xl" style="color: ${cat.color}"></i>
-                            </div>
-                            <h2 class="text-2xl font-extrabold mb-2">${cat.name[state.lang]}</h2>
-                            <p class="text-gray-400 mb-6">Формат: <b class="text-white">${cat.formats}</b><br>${t('price_info')}: <b class="text-cyan-400">${cat.price} ${t('rub')}</b></p>
-                            <div class="flex gap-3">
-                                <button onclick="startSell()" class="btn-premium flex-1 px-6 py-4 rounded-2xl flex items-center justify-center gap-2"><i class="fas fa-money-bill-trend-up"></i> ${t('sell')}</button>
-                                <button onclick="showToast('${t('buy_soon')}', 'error')" class="btn-ghost flex-1 px-6 py-4 rounded-2xl font-bold flex items-center justify-center gap-2"><i class="fas fa-shopping-cart"></i> ${t('buy')}</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
+                c.innerHTML = `<div class="fade-in"><button onclick="selectCategory(null)" class="mb-6 text-cyan-400 flex items-center gap-2"><i class="fas fa-arrow-left"></i> ${t('back')}</button><div class="glass-card p-8 rounded-3xl text-center relative overflow-hidden"><div class="absolute -top-10 -right-10 w-32 h-32 rounded-full" style="background: ${cat.color}30; filter: blur(40px);"></div><div class="relative z-10"><div class="w-20 h-20 mx-auto rounded-3xl flex items-center justify-center mb-4" style="background: ${cat.color}20;"><i class="${cat.icon} text-5xl" style="color: ${cat.color}"></i></div><h2 class="text-2xl font-extrabold mb-2">${cat.name[state.lang]}</h2><p class="text-gray-400 mb-6">Формат: <b class="text-white">${cat.formats}</b><br>${t('price_info')}: <b class="text-cyan-400">${cat.price} ${t('rub')}</b></p><div class="flex gap-3"><button onclick="startSell()" class="btn-premium flex-1 px-6 py-4 rounded-2xl flex items-center justify-center gap-2"><i class="fas fa-money-bill-trend-up"></i> ${t('sell')}</button><button onclick="showToast('${t('buy_soon')}', 'info', 'Информация')" class="btn-ghost flex-1 px-6 py-4 rounded-2xl font-bold flex items-center justify-center gap-2"><i class="fas fa-shopping-cart"></i> ${t('buy')}</button></div></div></div></div>`;
             }
         }
 
         function renderProfile(c) {
-            c.innerHTML = `<div class="fade-in">
-                <h2 class="text-3xl font-extrabold mb-6">${t('profile')}</h2>
-                <div class="glass-card p-6 rounded-3xl mb-6 relative overflow-hidden">
-                    <div class="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-cyan-500/20 filter blur-2xl"></div>
-                    <div class="relative z-10 flex items-center mb-6">
-                        <div class="w-20 h-20 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-2xl flex items-center justify-center text-3xl font-extrabold mr-4 shadow-lg shadow-cyan-500/30">${state.user.name[0]}</div>
-                        <div>
-                            <h3 class="text-xl font-bold">${state.user.name}</h3>
-                            <p class="text-gray-400 text-sm flex items-center gap-2"><i class="fas fa-hashtag text-xs"></i> ${state.user.id}</p>
-                            <p class="text-gray-400 text-sm flex items-center gap-2"><i class="fas fa-calendar-alt text-xs"></i> ${t('reg_date')}: ${state.user.reg_date}</p>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3 text-center">
-                        <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
-                            <p class="text-2xl font-extrabold text-cyan-400">${state.user.archives_sold}</p>
-                            <p class="text-xs text-gray-400 mt-1">${t('archives_sold')}</p>
-                        </div>
-                        <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
-                            <p class="text-2xl font-extrabold text-green-400">${state.user.total_payout} ₽</p>
-                            <p class="text-xs text-gray-400 mt-1">${t('total_payout')}</p>
-                        </div>
-                    </div>
-                </div>
-                <h3 class="text-xl font-bold mb-3 flex items-center gap-2"><i class="fas fa-history text-cyan-400"></i> ${t('history')}</h3>
-                <div class="glass-card p-4 rounded-3xl space-y-4">
-                    ${state.user.history.length === 0 ? '<p class="text-center text-gray-500 py-4">Пусто</p>' : state.user.history.map(h => `<div class="flex justify-between items-center">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl flex items-center justify-center ${h.type === 'deposit' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}">
-                                <i class="fas ${h.type === 'deposit' ? 'fa-arrow-down' : 'fa-arrow-up'}"></i>
-                            </div>
-                            <div>
-                                <p class="font-bold text-sm">${h.type === 'deposit' ? t('sell') : t('withdraw')}</p>
-                                <p class="text-xs text-gray-500">${h.date} · ${h.status}</p>
-                            </div>
-                        </div>
-                        <p class="font-bold ${h.type === 'deposit' ? 'text-green-400' : 'text-red-400'}">${h.type === 'deposit' ? '+' : '-'}${h.amount} ₽</p>
-                    </div>`).join('')}
-                </div>
-            </div>`;
+            const salesHistory = state.user.sales_history || [];
+            c.innerHTML = `<div class="fade-in"><h2 class="text-3xl font-extrabold mb-6">${t('profile')}</h2><div class="glass-card p-6 rounded-3xl mb-6 relative overflow-hidden"><div class="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-cyan-500/20 filter blur-2xl"></div><div class="relative z-10 flex items-center mb-6"><div class="w-20 h-20 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-2xl flex items-center justify-center text-3xl font-extrabold mr-4 shadow-lg shadow-cyan-500/30">${state.user.name[0]}</div><div><h3 class="text-xl font-bold">${state.user.name}</h3><p class="text-gray-400 text-sm flex items-center gap-2"><i class="fas fa-hashtag text-xs"></i> ${state.user.id}</p><p class="text-gray-400 text-sm flex items-center gap-2"><i class="fas fa-calendar-alt text-xs"></i> ${t('reg_date')}: ${state.user.reg_date}</p></div></div><div class="grid grid-cols-2 gap-3 text-center"><div class="bg-white/5 p-4 rounded-2xl border border-white/5"><p class="text-2xl font-extrabold text-cyan-400">${state.user.archives_sold}</p><p class="text-xs text-gray-400 mt-1">${t('archives_sold')}</p></div><div class="bg-white/5 p-4 rounded-2xl border border-white/5"><p class="text-2xl font-extrabold text-green-400">${state.user.total_payout} ₽</p><p class="text-xs text-gray-400 mt-1">${t('total_payout')}</p></div></div></div><h3 class="text-xl font-bold mb-3 flex items-center gap-2"><i class="fas fa-box-archive text-cyan-400"></i> ${t('sales_history')}</h3><div class="glass-card p-4 rounded-3xl space-y-4">${salesHistory.length === 0 ? '<p class="text-center text-gray-500 py-4">Список пуст</p>' : salesHistory.map(h => `<div class="flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl flex items-center justify-center bg-cyan-500/10 text-cyan-400"><i class="${categories[h.category].icon}"></i></div><div><p class="font-bold text-sm">${categories[h.category].name[state.lang]}</p><p class="text-xs text-gray-500">${h.date} · ${h.status}</p></div></div><p class="font-bold text-green-400">+${h.amount} ₽</p></div>`).join('')}</div></div>`;
         }
 
         function renderBalance(c) {
-            c.innerHTML = `<div class="fade-in">
-                <h2 class="text-3xl font-extrabold mb-6">${t('balance')}</h2>
-                <div class="glass-card p-8 rounded-3xl text-center mb-6 relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-cyan-500/10 to-transparent"></div>
-                    <div class="relative z-10">
-                        <p class="text-gray-400 text-sm uppercase tracking-wider mb-2">${t('available')}</p>
-                        <h3 class="text-5xl font-extrabold tracking-tight glow-text">${state.user.balance.toFixed(2)} ₽</h3>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <button onclick="openModal('deposit')" class="btn-premium p-5 rounded-2xl flex flex-col items-center gap-2"><i class="fas fa-arrow-down text-2xl"></i> ${t('deposit')}</button>
-                    <button onclick="openModal('withdraw')" class="btn-ghost p-5 rounded-2xl flex flex-col items-center gap-2"><i class="fas fa-arrow-up text-2xl text-cyan-400"></i> ${t('withdraw')}</button>
-                </div>
-                <h3 class="text-xl font-bold mb-3 flex items-center gap-2"><i class="fas fa-list-ul text-cyan-400"></i> ${t('operations_history')}</h3>
-                <div class="glass-card p-4 rounded-3xl space-y-3">
-                    ${state.user.history.length === 0 ? '<p class="text-center text-gray-500 py-4">Пусто</p>' : state.user.history.map(h => `<div class="flex justify-between items-center border-b border-white/5 pb-3 last:border-0">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg flex items-center justify-center ${h.type === 'deposit' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}">
-                                <i class="fas ${h.type === 'deposit' ? 'fa-arrow-down' : 'fa-arrow-up'} text-xs"></i>
-                            </div>
-                            <div>
-                                <p class="font-bold text-sm">${h.type === 'deposit' ? t('deposit') : t('withdraw')}</p>
-                                <p class="text-xs text-gray-500">${h.date}</p>
-                            </div>
-                        </div>
-                        <p class="font-bold ${h.type === 'deposit' ? 'text-green-400' : 'text-red-400'}">${h.type === 'deposit' ? '+' : '-'}${h.amount} ₽</p>
-                    </div>`).join('')}
-                </div>
-            </div>`;
+            const history = state.user.history || [];
+            c.innerHTML = `<div class="fade-in"><h2 class="text-3xl font-extrabold mb-6">${t('balance')}</h2><div class="glass-card p-8 rounded-3xl text-center mb-6 relative overflow-hidden"><div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-cyan-500/10 to-transparent"></div><div class="relative z-10"><p class="text-gray-400 text-sm uppercase tracking-wider mb-2">${t('available')}</p><h3 class="text-4xl font-extrabold tracking-tight glow-text mb-4">${formatBalance(state.user.balance)}</h3><div class="flex justify-center gap-2"><button onclick="changeCurrency('RUB')" class="px-4 py-1 rounded-full text-xs ${state.displayCurrency === 'RUB' ? 'btn-premium' : 'btn-ghost'}">RUB</button><button onclick="changeCurrency('USDT')" class="px-4 py-1 rounded-full text-xs ${state.displayCurrency === 'USDT' ? 'btn-premium' : 'btn-ghost'}">USDT</button><button onclick="changeCurrency('TON')" class="px-4 py-1 rounded-full text-xs ${state.displayCurrency === 'TON' ? 'btn-premium' : 'btn-ghost'}">TON</button></div></div></div><div class="grid grid-cols-2 gap-4 mb-6"><button onclick="openModal('deposit')" class="btn-premium p-5 rounded-2xl flex flex-col items-center gap-2"><i class="fas fa-arrow-down text-2xl"></i> ${t('deposit')}</button><button onclick="openModal('withdraw')" class="btn-ghost p-5 rounded-2xl flex flex-col items-center gap-2"><i class="fas fa-arrow-up text-2xl text-cyan-400"></i> ${t('withdraw')}</button></div><h3 class="text-xl font-bold mb-3 flex items-center gap-2"><i class="fas fa-list-ul text-cyan-400"></i> ${t('operations_history')}</h3><div class="glass-card p-4 rounded-3xl space-y-3">${history.length === 0 ? '<p class="text-center text-gray-500 py-4">Список пуст</p>' : history.map(h => `<div class="flex justify-between items-center border-b border-white/5 pb-3 last:border-0"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg flex items-center justify-center ${h.type === 'deposit' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}"><i class="fas ${h.type === 'deposit' ? 'fa-arrow-down' : 'fa-arrow-up'} text-xs"></i></div><div><p class="font-bold text-sm">${h.type === 'deposit' ? t('deposit_title') : t('withdraw_title')}</p><p class="text-xs text-gray-500">${h.date} · ${h.status}</p></div></div><p class="font-bold ${h.type === 'deposit' ? 'text-green-400' : 'text-red-400'}">${h.type === 'deposit' ? '+' : '-'}${h.amount} ${h.asset}</p></div>`).join('')}</div></div>`;
         }
 
         function switchTab(tab) { state.tab = tab; state.category = null; render(); }
         function selectCategory(cat) { state.category = cat; render(); }
+        function changeCurrency(cur) { state.displayCurrency = cur; render(); }
         function changeLanguage(lang) { state.lang = lang; try { localStorage.setItem('lang', lang); } catch (e) {} render(); closeModal(); }
         function startSell() { openModal('upload'); }
 
-        function handleDrop(e) {
-            e.preventDefault();
-            const dz = document.getElementById('dropzone');
-            if(dz) dz.classList.add('dragover');
-            if (e.dataTransfer.files && e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);
-        }
+        function handleDrop(e) { e.preventDefault(); const dz = document.getElementById('dropzone'); if(dz) dz.classList.add('dragover'); if (e.dataTransfer.files && e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]); }
         function handleFileSelect(e) { if (e.target.files && e.target.files[0]) processFile(e.target.files[0]); }
         
         async function processFile(file) {
             const isArchive = file.name.endsWith('.zip') || file.name.endsWith('.rar');
-            if (!isArchive) { showToast(t('upload_error'), 'error'); return; }
-            
-            closeModal();
-            showToast("⏳ " + t('archive_accepted'), 'success');
+            if (!isArchive) { showToast(t('upload_error'), 'error', 'Формат не поддерживается'); return; }
+            closeModal(); showToast(t('archive_accepted'), 'info', 'Пожалуйста, подождите');
             
             const formData = new FormData();
             formData.append('file', file);
@@ -296,148 +191,48 @@
             formData.append('category', state.category);
 
             try {
-                const res = await fetch(`${API_URL}/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
+                const res = await fetch(`${API_URL}/upload`, { method: 'POST', body: formData });
                 const data = await res.json();
-                
                 if (data.success) {
-                    const valid = data.valid;
-                    const invalid = data.invalid;
-                    const payout = valid * categories[state.category].price;
-
-                    tg.showPopup({
-                        title: "✅ " + t('valid_found'),
-                        message: `${t('valid_found')}: ${valid}\n${t('invalid_found')}: ${invalid}\n\n${t('to_payout')}: ${payout} ₽`,
-                        buttons: [{ id: 'cancel', type: 'cancel', text: t('cancel') }, { id: 'ok', type: 'ok', text: t('upload_btn') }]
-                    }, async (btn) => {
+                    const valid = data.valid; const invalid = data.invalid; const payout = valid * categories[state.category].price;
+                    if (valid === 0) { showToast('В архиве не найдено валидных файлов.', 'error', 'Ошибка проверки'); return; }
+                    tg.showPopup({ title: "✅ " + t('valid_found'), message: `${t('valid_found')}: ${valid}\n${t('invalid_found')}: ${invalid}\n\n${t('to_payout')}: ${payout} ₽`, buttons: [{ id: 'cancel', type: 'cancel', text: t('cancel') }, { id: 'ok', type: 'ok', text: t('upload_btn') }] }, async (btn) => {
                         if (btn === 'ok') {
                             try {
-                                const sellRes = await fetch(`${API_URL}/sell`, {
-                                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ tg_id: state.user.id, category: state.category, valid_count: valid })
-                                });
+                                const sellRes = await fetch(`${API_URL}/sell`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tg_id: state.user.id, category: state.category, valid_count: valid }) });
                                 const sellData = await sellRes.json();
                                 if (sellData.success) {
-                                    state.user.balance = sellData.balance;
-                                    state.user.archives_sold += 1;
-                                    state.user.total_payout += sellData.payout;
-                                    state.user.history.unshift({ type: 'deposit', amount: sellData.payout, date: new Date().toLocaleDateString('ru-RU'), status: 'Выполнено' });
-                                    showToast(`💰 ${t('balance_topped')} ${sellData.payout} ₽!`, 'success');
-                                    switchTab('balance');
+                                    state.user.balance = sellData.balance; state.user.archives_sold += 1; state.user.total_payout += sellData.payout;
+                                    state.user.history.unshift({ type: 'deposit', amount: sellData.payout, asset: 'RUB', date: new Date().toLocaleDateString('ru-RU'), status: 'Выполнено' });
+                                    state.user.sales_history.unshift({ category: state.category, amount: sellData.payout, date: new Date().toLocaleDateString('ru-RU'), status: 'Успешно' });
+                                    showToast(`${t('balance_topped')} ${sellData.payout} ₽!`, 'success', 'Готово'); switchTab('balance');
                                 }
                             } catch (e) { showToast('Ошибка сети', 'error'); }
-                        } else {
-                            tg.showPopup({ message: t('cancel_confirm'), buttons: [{ id: 'no', type: 'cancel', text: t('no') }, { id: 'yes', type: 'destructive', text: t('yes') }] }, (b) => { if (b === 'yes') showToast(t('action_canceled'), 'error'); });
-                        }
+                        } else { tg.showPopup({ message: t('cancel_confirm'), buttons: [{ id: 'no', type: 'cancel', text: t('no') }, { id: 'yes', type: 'destructive', text: t('yes') }] }, (b) => { if (b === 'yes') showToast(t('action_canceled'), 'info', 'Отмена'); }); }
                     });
-                } else {
-                    showToast('Ошибка обработки архива', 'error');
-                }
-            } catch (e) { 
-                showToast('Сеть недоступна', 'error'); 
-            }
+                } else { showToast('Ошибка обработки архива', 'error'); }
+            } catch (e) { showToast('Сеть недоступна', 'error'); }
         }
 
         function openModal(type) {
             const container = document.getElementById('modal-container');
             let content = '';
             if (type === 'upload') {
-                content = `<div class="modal-bg fixed inset-0 z-50 flex items-center justify-center p-6" onclick="closeModal()">
-                    <div class="glass-card p-8 rounded-3xl w-full max-w-sm fade-in" onclick="event.stopPropagation()">
-                        <h3 class="text-xl font-bold mb-2 text-center"><i class="fas fa-cloud-arrow-up mr-2 text-cyan-400"></i>${t('upload_archive')}</h3>
-                        <label id="dropzone" class="dropzone block w-full h-48 rounded-2xl flex flex-col items-center justify-center cursor-pointer mt-4" ondragover="handleDrop(event)" ondrop="handleDrop(event)" ondragleave="this.classList.remove('dragover')">
-                            <i class="fas fa-file-archive text-5xl text-cyan-400 mb-3"></i>
-                            <span class="text-gray-400 text-sm text-center px-4">${t('drag_drop')}</span>
-                            <input type="file" class="hidden" accept=".zip,.rar" onchange="handleFileSelect(event)">
-                        </label>
-                        <button onclick="closeModal()" class="mt-6 w-full btn-ghost p-4 rounded-2xl font-bold">${t('cancel')}</button>
-                    </div>
-                </div>`;
+                content = `<div class="modal-bg fixed inset-0 z-50 flex items-center justify-center p-6" onclick="closeModal()"><div class="glass-card p-8 rounded-3xl w-full max-w-sm fade-in" onclick="event.stopPropagation()"><h3 class="text-xl font-bold mb-2 text-center"><i class="fas fa-cloud-arrow-up mr-2 text-cyan-400"></i>${t('upload_archive')}</h3><label id="dropzone" class="dropzone block w-full h-48 rounded-2xl flex flex-col items-center justify-center cursor-pointer mt-4" ondragover="handleDrop(event)" ondrop="handleDrop(event)" ondragleave="this.classList.remove('dragover')"><i class="fas fa-file-archive text-5xl text-cyan-400 mb-3"></i><span class="text-gray-400 text-sm text-center px-4">${t('drag_drop')}</span><input type="file" class="hidden" accept=".zip,.rar" onchange="handleFileSelect(event)"></label><button onclick="closeModal()" class="mt-6 w-full btn-ghost p-4 rounded-2xl font-bold">${t('cancel')}</button></div></div>`;
             } else if (type === 'deposit') {
-                content = `<div class="modal-bg fixed inset-0 z-50 flex items-center justify-center p-6" onclick="closeModal()">
-                    <div class="glass-card p-8 rounded-3xl w-full max-w-sm fade-in" onclick="event.stopPropagation()">
-                        <h3 class="text-xl font-bold mb-6 text-center"><i class="fas fa-coins mr-2 text-cyan-400"></i> ${t('deposit')}</h3>
-                        <input id="dep_amount" type="number" placeholder="${t('deposit_amount')} (USDT)" class="w-full bg-white/5 p-4 rounded-2xl mb-4 outline-none border border-white/10 focus:border-cyan-400">
-                        <select id="dep_asset" class="w-full bg-white/5 p-4 rounded-2xl mb-6 outline-none border border-white/10 focus:border-cyan-400">
-                            <option value="USDT" class="bg-gray-800">USDT</option>
-                            <option value="TON" class="bg-gray-800">TON</option>
-                            <option value="BTC" class="bg-gray-800">BTC</option>
-                        </select>
-                        <button onclick="depositCrypto()" class="btn-premium w-full p-4 rounded-2xl">${t('deposit')}</button>
-                    </div>
-                </div>`;
+                content = `<div class="modal-bg fixed inset-0 z-50 flex items-center justify-center p-6" onclick="closeModal()"><div class="glass-card p-8 rounded-3xl w-full max-w-sm fade-in" onclick="event.stopPropagation()"><h3 class="text-xl font-bold mb-6 text-center"><i class="fas fa-coins mr-2 text-cyan-400"></i> ${t('deposit')}</h3><input id="dep_amount" type="number" placeholder="${t('deposit_amount')}" class="w-full bg-white/5 p-4 rounded-2xl mb-4 outline-none border border-white/10 focus:border-cyan-400"><select id="dep_asset" class="w-full bg-white/5 p-4 rounded-2xl mb-6 outline-none border border-white/10 focus:border-cyan-400"><option value="USDT" class="bg-gray-800">USDT</option><option value="TON" class="bg-gray-800">TON</option><option value="BTC" class="bg-gray-800">BTC</option></select><button onclick="depositCrypto()" class="btn-premium w-full p-4 rounded-2xl">${t('deposit')}</button></div></div>`;
             } else if (type === 'withdraw') {
-                content = `<div class="modal-bg fixed inset-0 z-50 flex items-center justify-center p-6" onclick="closeModal()">
-                    <div class="glass-card p-8 rounded-3xl w-full max-w-sm fade-in" onclick="event.stopPropagation()">
-                        <h3 class="text-xl font-bold mb-6 text-center"><i class="fas fa-money-bill-transfer mr-2 text-cyan-400"></i> ${t('withdraw')}</h3>
-                        <input id="wd_address" type="text" placeholder="${t('enter_address')}" class="w-full bg-white/5 p-4 rounded-2xl mb-4 outline-none border border-white/10 focus:border-cyan-400">
-                        <input id="wd_amount" type="number" placeholder="${t('withdraw_amount')}" class="w-full bg-white/5 p-4 rounded-2xl mb-4 outline-none border border-white/10 focus:border-cyan-400">
-                        <select id="wd_asset" class="w-full bg-white/5 p-4 rounded-2xl mb-6 outline-none border border-white/10 focus:border-cyan-400">
-                            <option value="USDT" class="bg-gray-800">USDT</option>
-                            <option value="TON" class="bg-gray-800">TON</option>
-                            <option value="BTC" class="bg-gray-800">BTC</option>
-                        </select>
-                        <div class="mb-4 text-xs text-gray-400 flex items-center gap-2 cursor-pointer" onclick="showToast('${t('cryptobot_info')}')">
-                            <i class="fas fa-robot text-blue-400"></i> CryptoBot Info <i class="fas fa-circle-info"></i>
-                        </div>
-                        <button onclick="withdrawCrypto()" class="btn-premium w-full p-4 rounded-2xl">${t('withdraw_crypto')}</button>
-                    </div>
-                </div>`;
+                content = `<div class="modal-bg fixed inset-0 z-50 flex items-center justify-center p-6" onclick="closeModal()"><div class="glass-card p-8 rounded-3xl w-full max-w-sm fade-in" onclick="event.stopPropagation()"><h3 class="text-xl font-bold mb-6 text-center"><i class="fas fa-money-bill-transfer mr-2 text-cyan-400"></i> ${t('withdraw')}</h3><input id="wd_address" type="text" placeholder="${t('enter_address')}" class="w-full bg-white/5 p-4 rounded-2xl mb-4 outline-none border border-white/10 focus:border-cyan-400"><input id="wd_amount" type="number" placeholder="${t('withdraw_amount')}" class="w-full bg-white/5 p-4 rounded-2xl mb-4 outline-none border border-white/10 focus:border-cyan-400"><select id="wd_asset" class="w-full bg-white/5 p-4 rounded-2xl mb-6 outline-none border border-white/10 focus:border-cyan-400"><option value="USDT" class="bg-gray-800">USDT</option><option value="TON" class="bg-gray-800">TON</option></select><div class="mb-4 text-xs text-gray-400 flex items-center gap-2 cursor-pointer" onclick="showToast('${t('cryptobot_info')}', 'info', 'CryptoBot')"><i class="fas fa-robot text-blue-400"></i> CryptoBot Info <i class="fas fa-circle-info"></i></div><button onclick="withdrawCrypto()" class="btn-premium w-full p-4 rounded-2xl">${t('withdraw_crypto')}</button></div></div>`;
             } else if (type === 'help') {
-                content = `<div class="modal-bg fixed inset-0 z-50 flex items-center justify-center p-6" onclick="closeModal()">
-                    <div class="glass-card p-8 rounded-3xl w-full max-w-sm fade-in" onclick="event.stopPropagation()">
-                        <h3 class="text-xl font-bold mb-6 text-center"><i class="fas fa-headset mr-2 text-cyan-400"></i> ${t('help')}</h3>
-                        <div class="space-y-4">
-                            <a href="#" class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl">
-                                <i class="fas fa-user-tie text-cyan-400 text-xl w-8 text-center"></i>
-                                <div><p class="font-bold">${t('developer')}</p><p class="text-gray-400 text-sm">@dev_skupka</p></div>
-                            </a>
-                            <a href="#" class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl">
-                                <i class="fas fa-life-ring text-cyan-400 text-xl w-8 text-center"></i>
-                                <div><p class="font-bold">${t('support')}</p><p class="text-gray-400 text-sm">@support_skupka</p></div>
-                            </a>
-                            <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl">
-                                <i class="fas fa-clock text-cyan-400 text-xl w-8 text-center"></i>
-                                <div><p class="font-bold">${t('support_time')}</p></div>
-                            </div>
-                        </div>
-                        <button onclick="closeModal()" class="mt-6 w-full btn-premium p-4 rounded-2xl">${t('close')}</button>
-                    </div>
-                </div>`;
+                content = `<div class="modal-bg fixed inset-0 z-50 flex items-center justify-center p-6" onclick="closeModal()"><div class="glass-card p-8 rounded-3xl w-full max-w-sm fade-in" onclick="event.stopPropagation()"><h3 class="text-xl font-bold mb-6 text-center"><i class="fas fa-headset mr-2 text-cyan-400"></i> ${t('help')}</h3><div class="space-y-4"><a href="#" class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl"><i class="fas fa-user-tie text-cyan-400 text-xl w-8 text-center"></i><div><p class="font-bold">${t('developer')}</p><p class="text-gray-400 text-sm">@dev_skupka</p></div></a><a href="#" class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl"><i class="fas fa-life-ring text-cyan-400 text-xl w-8 text-center"></i><div><p class="font-bold">${t('support')}</p><p class="text-gray-400 text-sm">@support_skupka</p></div></a><div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl"><i class="fas fa-clock text-cyan-400 text-xl w-8 text-center"></i><div><p class="font-bold">${t('support_time')}</p></div></div></div><button onclick="closeModal()" class="mt-6 w-full btn-premium p-4 rounded-2xl">${t('close')}</button></div></div>`;
             } else if (type === 'lang') {
-                const langs = { 'ru': '🇷🇺 Русский', 'en': '🇬🇧 English' };
-                let langList = '';
-                Object.keys(langs).forEach(l => {
-                    langList += `<button onclick="changeLanguage('${l}')" class="w-full text-left p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition flex justify-between items-center ${state.lang === l ? 'border border-cyan-400' : ''}">
-                        <span class="font-medium">${langs[l]}</span>
-                        ${state.lang === l ? '<i class="fas fa-check-circle text-cyan-400"></i>' : ''}
-                    </button>`;
-                });
-                content = `<div class="modal-bg fixed inset-0 z-50 flex items-center justify-center p-6" onclick="closeModal()">
-                    <div class="glass-card p-8 rounded-3xl w-full max-w-sm fade-in" onclick="event.stopPropagation()">
-                        <h3 class="text-xl font-bold mb-6 text-center"><i class="fas fa-globe mr-2 text-cyan-400"></i> ${t('select_lang')}</h3>
-                        <div class="space-y-2">${langList}</div>
-                        <button onclick="closeModal()" class="mt-6 w-full btn-ghost p-4 rounded-2xl font-bold">${t('cancel')}</button>
-                    </div>
-                </div>`;
+                const langs = { 'ru': '🇷🇺 Русский', 'en': '🇬🇧 English' }; let langList = '';
+                Object.keys(langs).forEach(l => { langList += `<button onclick="changeLanguage('${l}')" class="w-full text-left p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition flex justify-between items-center ${state.lang === l ? 'border border-cyan-400' : ''}"><span class="font-medium">${langs[l]}</span>${state.lang === l ? '<i class="fas fa-check-circle text-cyan-400"></i>' : ''}</button>`; });
+                content = `<div class="modal-bg fixed inset-0 z-50 flex items-center justify-center p-6" onclick="closeModal()"><div class="glass-card p-8 rounded-3xl w-full max-w-sm fade-in" onclick="event.stopPropagation()"><h3 class="text-xl font-bold mb-6 text-center"><i class="fas fa-globe mr-2 text-cyan-400"></i> ${t('select_lang')}</h3><div class="space-y-2">${langList}</div><button onclick="closeModal()" class="mt-6 w-full btn-ghost p-4 rounded-2xl font-bold">${t('cancel')}</button></div></div>`;
             } else if (type === 'privacy') {
-                content = `<div class="modal-bg fixed inset-0 z-50 flex items-center justify-center p-6" onclick="closeModal()">
-                    <div class="glass-card p-8 rounded-3xl w-full max-w-sm max-h-[80vh] overflow-y-auto fade-in" onclick="event.stopPropagation()">
-                        <h3 class="text-xl font-bold mb-4 text-center"><i class="fas fa-user-shield mr-2 text-cyan-400"></i> ${t('privacy')}</h3>
-                        <p class="text-sm text-gray-300 leading-relaxed">${t('privacy_text')}</p>
-                        <button onclick="closeModal()" class="mt-6 w-full btn-premium p-4 rounded-2xl">OK</button>
-                    </div>
-                </div>`;
+                content = `<div class="modal-bg fixed inset-0 z-50 flex items-center justify-center p-6" onclick="closeModal()"><div class="glass-card p-8 rounded-3xl w-full max-w-sm max-h-[80vh] overflow-y-auto fade-in" onclick="event.stopPropagation()"><h3 class="text-xl font-bold mb-4 text-center"><i class="fas fa-user-shield mr-2 text-cyan-400"></i> ${t('privacy')}</h3><p class="text-sm text-gray-300 leading-relaxed">${t('privacy_text')}</p><button onclick="closeModal()" class="mt-6 w-full btn-premium p-4 rounded-2xl">OK</button></div></div>`;
             } else if (type === 'offer') {
-                content = `<div class="modal-bg fixed inset-0 z-50 flex items-center justify-center p-6" onclick="closeModal()">
-                    <div class="glass-card p-8 rounded-3xl w-full max-w-sm max-h-[80vh] overflow-y-auto fade-in" onclick="event.stopPropagation()">
-                        <h3 class="text-xl font-bold mb-4 text-center"><i class="fas fa-file-contract mr-2 text-cyan-400"></i> ${t('offer')}</h3>
-                        <p class="text-sm text-gray-300 leading-relaxed">${t('offer_text')}</p>
-                        <button onclick="closeModal()" class="mt-6 w-full btn-premium p-4 rounded-2xl">OK</button>
-                    </div>
-                </div>`;
+                content = `<div class="modal-bg fixed inset-0 z-50 flex items-center justify-center p-6" onclick="closeModal()"><div class="glass-card p-8 rounded-3xl w-full max-w-sm max-h-[80vh] overflow-y-auto fade-in" onclick="event.stopPropagation()"><h3 class="text-xl font-bold mb-4 text-center"><i class="fas fa-file-contract mr-2 text-cyan-400"></i> ${t('offer')}</h3><p class="text-sm text-gray-300 leading-relaxed">${t('offer_text')}</p><button onclick="closeModal()" class="mt-6 w-full btn-premium p-4 rounded-2xl">OK</button></div></div>`;
             }
             container.innerHTML = content;
         }
@@ -445,48 +240,29 @@
         function closeModal() { document.getElementById('modal-container').innerHTML = ''; }
 
         async function depositCrypto() {
-            const amount = parseFloat(document.getElementById('dep_amount').value);
-            const asset = document.getElementById('dep_asset').value;
+            const amount = parseFloat(document.getElementById('dep_amount').value); const asset = document.getElementById('dep_asset').value;
             if (isNaN(amount) || amount <= 0) { showToast('Введите сумму', 'error'); return; }
-            
             try {
-                const res = await fetch(`${API_URL}/deposit`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ tg_id: state.user.id, asset, amount })
-                });
+                const res = await fetch(`${API_URL}/deposit`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tg_id: state.user.id, asset, amount }) });
                 const data = await res.json();
-                if (data.success) {
-                    closeModal();
-                    tg.openInvoice(data.pay_url); 
-                } else { showToast('Ошибка счета', 'error'); }
+                if (data.success) { closeModal(); tg.openInvoice(data.pay_url); } else { showToast('Ошибка счета', 'error'); }
             } catch (e) { showToast('Сеть недоступна', 'error'); }
         }
 
         async function withdrawCrypto() {
-            const address = document.getElementById('wd_address').value;
-            const amount = parseFloat(document.getElementById('wd_amount').value);
-            const asset = document.getElementById('wd_asset').value;
+            const address = document.getElementById('wd_address').value; const amount = parseFloat(document.getElementById('wd_amount').value); const asset = document.getElementById('wd_asset').value;
             if (!address || isNaN(amount) || amount <= 0) { showToast('Заполните поля', 'error'); return; }
-
             try {
-                const res = await fetch(`${API_URL}/withdraw`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ tg_id: state.user.id, asset, amount, address })
-                });
+                const res = await fetch(`${API_URL}/withdraw`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tg_id: state.user.id, asset, amount, address }) });
                 const data = await res.json();
                 if (data.success) {
-                    state.user.balance = data.balance;
-                    state.user.history.unshift({ type: 'withdraw', amount, date: new Date().toLocaleDateString('ru-RU'), status: 'В обработке' });
-                    closeModal();
-                    showToast(`✅ Заявка на вывод ${amount} ${asset} создана!`, 'success');
-                    render();
+                    state.user.balance = data.balance; state.user.history.unshift({ type: 'withdraw', amount, asset, date: new Date().toLocaleDateString('ru-RU'), status: 'В обработке' });
+                    closeModal(); showToast(`Заявка на вывод ${amount} ${asset} создана!`, 'success', 'Успешно'); render();
                 } else { showToast(data.error || 'Ошибка вывода', 'error'); }
             } catch (e) { showToast('Сеть недоступна', 'error'); }
         }
 
-        // Init
-        getMe();
-        render();
+        getMe(); render();
     </script>
 </body>
 </html>
